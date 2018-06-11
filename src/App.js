@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import './App.css';
-
+let test = "test";
 let defultTextColor = '#fff';
 let defultStyle ={
   color: defultTextColor

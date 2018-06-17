@@ -13,19 +13,19 @@ let fakeServerData = {
     name: 'Paichayon',
     playlist: [
       {
-        name: 'Play List A',
+        name: 'Fev Song',
         songs: [{name : 'Song A', duration: 1345}, {name : 'Song B', duration: 1050}, {name : 'Song C', duration: 1250}]
       },
       {
-        name: 'Play List B',
+        name: 'Chill out',
         songs: [{name : 'Song O', duration: 1345}, {name : 'Song P', duration: 1050}, {name : 'Song E', duration: 1250}]
       },
       {
-        name: 'Play List E',
+        name: 'Focus',
         songs: [{name : 'Song Q', duration: 1345}, {name : 'Song Y', duration: 1050}, {name : 'Song E', duration: 1250}]
       },
       {       
-        name: 'Play List O',
+        name: 'Retro',
         songs: [{name : 'Song U', duration: 1345}, {name : 'Song D', duration: 1050}, {name : 'Song W', duration: 1250}]
       }
     ]
@@ -66,7 +66,7 @@ class Filter extends Component {
       <div style={defultStyle}>
         <img src="" alt=""/>
         <input type="text"/> 
-        Text
+
       </div>
     );
   }
@@ -74,12 +74,16 @@ class Filter extends Component {
 
 class Playlist extends Component{
   render() {
+    let playlist = this.props.playlist;
     return (
-      <div style={{...defultStyle, width: "30%",display: 'inline-block'}}>
+      
+      <div style={{...defultStyle, width: "25%",display: 'inline-block'}}>
         <img src="" alt=""/>
-          <h3>playlist Name</h3>
+          <h3>{playlist.name}</h3>
           <ul>
-          <li>Song 1</li> <li>Song 2</li> <li>Song 3</li>
+            {playlist.songs.map(song =>
+              <li>{song.name}</li>
+            )}
           </ul>
       </div>
     );
@@ -109,9 +113,11 @@ class App extends Component {
           
           
           <Filter></Filter>
-          <Playlist></Playlist>
-          <Playlist></Playlist>
-          <Playlist></Playlist>
+          {this.state.serverData.user.playlist.map(playlist => 
+           <Playlist playlist={playlist}/>
+          )}
+          
+        
         </div> : <h1 style={defultStyle}>Loading...</h1>
       }
       </div>

@@ -8,29 +8,6 @@ let defultStyle ={
 };
 
 
-let fakeServerData = {
-  user: {
-    name: 'Paichayon',
-    playlist: [
-      {
-        name: 'Fev Song',
-        songs: [{name : 'Song A', duration: 1345}, {name : 'Song B', duration: 1050}, {name : 'Song C', duration: 1250}]
-      },
-      {
-        name: 'Chill out',
-        songs: [{name : 'Song O', duration: 1345}, {name : 'Song P', duration: 1050}, {name : 'Song E', duration: 1250}]
-      },
-      {
-        name: 'Focus',
-        songs: [{name : 'Song Q', duration: 1345}, {name : 'Song Y', duration: 1050}, {name : 'Song E', duration: 1250}]
-      },
-      {       
-        name: 'Retro',
-        songs: [{name : 'Song U', duration: 1345}, {name : 'Song D', duration: 1050}, {name : 'Song W', duration: 1250}]
-      }
-    ]
-  }
-}
 
 class PlaylistCounter extends Component {
   render() {
@@ -79,7 +56,7 @@ class Playlist extends Component{
     return (
       
       <div style={{...defultStyle, width: "25%",display: 'inline-block'}}>
-        <img src={playlist.imageUrl} style={{width: '100px'}}/>
+        <img src={playlist.imageUrl} style={{width: '100px'}} alt=""/>
           <h3>{playlist.name}</h3>
           <ul>
             {playlist.songs.map(song =>
@@ -123,31 +100,61 @@ class App extends Component {
       headers: {'Authorization': 'Bearer ' + accessToken}
     })
     .then(res=> res.json())
-    .then(data => this.setState(
+    .then(playlistData => {
+      let playlists = playlistData.items
+      let trackDataPromises =  playlists.map(playlist => {
+        let responsePromise = 
+        fetch(playlist.tracks.href, {
+          headers: {'Authorization': 'Bearer ' + accessToken}
+        });
+        
+        let trackDataPromises = responsePromise.then(res => res.json());
+        return trackDataPromises;
+      });
+
+      let allTrackDataPromises =Promise.all(trackDataPromises)
+
+      let playlistsPromise = allTrackDataPromises
+      .then(trackDatas => {
+        trackDatas.forEach((trackData,i) => {
+          playlists[i].trackDatas = trackData.items
+          .map(item => item.track)
+          .map(trackData => ({
+            name: trackData.name,
+            duration: trackData.duration_ms/1000
+          }));
+        });
+        return playlists;
+      });
+      return playlistsPromise;
+    })
+    .then(playlists => this.setState(
         {playlist: 
-          data.items.map(item =>{ 
-            console.log(data.items);
+          playlists.map(item =>{ 
+            
             return {
               name: item.name,
               imageUrl: item.images[0].url,
-              songs:[]
+              songs: item.trackDatas.slice(0,5)
             }
           
-          }
-          )
-      }
-    
-    ));
+          })
+      }));
   }
 
   render() {
     let playlistToRender = 
     this.state.user && 
     this.state.playlist 
-      ? this.state.playlist.filter(playlist => 
-      playlist.name.toLowerCase().includes(
-        this.state.filterString.toLocaleLowerCase())
-    ) : []
+      ? this.state.playlist.filter(playlist =>{ 
+        let matchesPlaylist = playlist.name.toLowerCase().includes(
+          this.state.filterString.toLocaleLowerCase());
+
+        let matchesSong = playlist.songs.find(song => song.name.toLowerCase().includes(this.state.filterString.toLowerCase()));
+
+
+        return matchesPlaylist || matchesSong; 
+      }) : []
     return (
       <div className="App">
       { this.state.user ? <div><h1 style={{...defultStyle, fontSize: "54px"}}>
